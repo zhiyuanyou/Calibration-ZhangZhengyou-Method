@@ -89,16 +89,18 @@ class Calibrator(object):
 
 
     def dedistortion(self, save_dir):
+        if not os.path.exists(save_dir):
+            os.makedirs(save_dir)
         # if not calibrated, calibrate first
         if self.mat_intri is None:
             assert self.coff_dis is None
             self.calibrate_camera()
 
-        w, h = self.shape_inner_corner
         for img_path in self.img_paths:
             _, img_name = os.path.split(img_path)
             img = cv2.imread(img_path)
-            newcameramtx, roi = cv2.getOptimalNewCameraMatrix(self.mat_intri, self.coff_dis, (w,h), 0, (w,h))
+            w, h = img.shape[1::-1]
+            newcameramtx, roi = cv2.getOptimalNewCameraMatrix(self.mat_intri, self.coff_dis, (w, h), 0, (w, h))
             dst = cv2.undistort(img, self.mat_intri, self.coff_dis, None, newcameramtx)
             # clip the image
             # x, y, w, h = roi
